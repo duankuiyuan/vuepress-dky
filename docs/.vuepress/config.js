@@ -6,7 +6,7 @@ module.exports = {
         //导航栏配置
         nav: [
           { text: '首页', link: '/' },
-          { text: 'js基础', link: '/jsBasic/' },
+          { text: 'jvascript', link: '/jsBasic/' },
           { text: 'html+css', link: '/htmlcss/' },
           { text: 'Vue', link: '/vue/' },
           { text: 'React', link: '/react/' },
@@ -20,9 +20,10 @@ module.exports = {
          //侧边栏配置
          sidebar: {
             '/jsBasic/': [
-              '',     /* /foo/ */
-              'one',  /* /foo/one.html */
-              'two'   /* /foo/two.html */
+              '',   
+              'jsBasic',  
+              'jsTheory',  
+              'promise'  
             ]
           }
       },
