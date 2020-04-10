@@ -83,18 +83,50 @@ let a = 'abc'
 
 ### 2.4 es6数据类型
 ::: tip 1.Symbol
-
++ es6除了Number String Bollean Object null undefined 还新增了Symbol，它标识独一无二的值，可以用来定义对象的唯一的属性名
++ Symbol不能使用new命令，因为Symbol是原始数据类型不是对象。可以接收一个字符串作为参数，为新创建的symbol提供描述，用来显示在控制台或者做为字符串的时候使用，便于区分
+   ``` js
+    let a = Symbol('a');
+    let b = Symbol('a');
+    console.log(a) //输出 Symbol(a)
+    console.log(b) ;//输出 Symbol(a)
+    console.log(a === b);//输出 false
+    console.log(a.toString()) //输出 'Symbol(a)'
+    console.log(typeof a)//输出 'symbol'
+    let obj = {};
+    obj[b] = '测试';
+    console.log(obj[b]);//输出 '测试'
+   ```
 :::
 ::: tip 2.Set
 
 :::
 ::: tip 3.Map
+#### Map 对象保存键值对。任何值(对象或者原始值) 都可以作为一个键或一个值
+#### Map 和 Object
+ ::: warning  区别
+ + 一个 Object 的键只能是字符串或者 Symbols，但一个 Map 的键可以是任意值。
+ + Map 中的键值是有序的（push进去的顺序），而添加到对象中的键则不是（他们会先排数字开头的key值，然后才是字符串开头的key值）。
+ + Map 的键值对个数可以从 size 属性获取，而 Object 的键值对个数只能手动计算
+ + Object对象有原型， 也就是说他有默认的key值在对象上面， 除非我们使用Object.create(null)创建一个没有原型的对象
+ :::
 
-:::
    ## 3 js运算符
 ::: tip &&运算符
-
-:::
-::: tip ||运算符
+  #### && 碰到假就停返回当前表达式值而不是布尔值
+  ::: warning  &&详细规则
+  先看第一个表达式转换成布尔值的结果，如果第一个结果为真，那么它就会看第二个表达式转换成布尔值的结果。如果只有两个表达式，只要看到第二个表达式(第一个表达式的值为真)，就可以返回该表达式（第二个表达式）的值了。
+  如果第一个表达式转换成布尔值的结果为fasle，直接返回第一个表达式的值。
+  ``` js
+   var f = 1 + 1 && 1 - 1; //f = 0
+   var f = 1 - 1 && 1 + 1; //f = 0
+    2 > 1 && document.write('1') //相当于if 起到中断作用
+  ```
+  :::
+::: tip ||运算符  碰到真就停返回当前表达式值而不是布尔值
+  ``` js
+    var event = e || window.event; //事件兼容写法
+  ```
+ 
 
 :::
