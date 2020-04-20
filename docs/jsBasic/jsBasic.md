@@ -99,8 +99,37 @@ let a = 'abc'
    ```
 :::
 ::: tip 2.Set
-
-:::
+#### 简述
+set对象允许存储任何类型的唯一值,无论是原始值或者是对象引用; set对象是值的集合,元素只会出现一次,即Set中的元素是唯一的.
+ ::: warning  new Set([iterable])
+ 参数非必需, 如果传递一个可迭代对象,他的所有元素被添加到新的Set中,如果无此参数,则Set为空；返回一个新的Set对象
+ :::
+#### Set与数组之间的装换
+  ``` js
+    var arr = [1,2,3,4,4];
+    var set = new Set(arr) //数组转换set对象
+    set //{1,2,3,4}
+    //方法一
+    Array.from(set) //[1,2,3,4]
+    //方法二
+    [...set] //[1,2,3,4]
+  ```
+#### Set与字符串
+  ``` js
+    var str = 'siiva';
+    new Set(str) //{'s','i','v','a'}
+  ```
+#### set数组去重
+  ``` js
+   let array = [1,2,2,3,3,4,4,5,5];
+   let set = new Set(array);//{1, 2, 3, 4, 5}
+   let newArray = Array.from(set) //[1, 2, 3, 4, 5]
+  ```
+  ``` js
+   let array = [1,2,2,3,3,4,4,5,5];
+   let set = new Set(array);//{1, 2, 3, 4, 5}
+   let newArray = [...set] //[1, 2, 3, 4, 5]
+  ```
 ::: tip 3.Map
 #### Map 对象保存键值对。任何值(对象或者原始值) 都可以作为一个键或一个值
 #### Map 和 Object
@@ -130,3 +159,4 @@ let a = 'abc'
  
 
 :::
+## 4 js数组

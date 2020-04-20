@@ -23,7 +23,8 @@ module.exports = {
               '',   
               'jsBasic',  
               'jsTheory',  
-              'promise'  
+              'promise',
+              'es6'  
             ]
           }
       },

@@ -3,7 +3,7 @@ home: true
 heroImage: /mandaren.jpg
 heroText: 你很不走运
 tagline: 很不走运
-actionText: 开始吧 →
+actionText:  →
 actionLink: /jsBasic/
 features:
 - title: 简洁至上
@@ -12,5 +12,5 @@ features:
   details: 享受 Vue + webpack 的开发体验，在 Markdown 中使用 Vue 组件，同时可以使用 Vue 来开发自定义主题。
 - title: 高性能
   details: VuePress 为每个页面预渲染生成静态的 HTML，同时在页面被加载的时候，将作为 SPA 运行。
-footer: 你真的很不走运
+footer: 你的眉间藏着你见过的人、走过的路、看过的书
 ---
