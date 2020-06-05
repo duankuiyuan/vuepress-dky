@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>vuex | 蛮大人</title>
+    <meta name="description" content="小前端">
+    <meta name="generator" content="VuePress 1.4.0">
+    
+    
+    <link rel="preload" href="/assets/css/0.styles.1da2d66b.css" as="style"><link rel="preload" href="/assets/js/app.e393c286.js" as="script"><link rel="preload" href="/assets/js/2.4ac4112c.js" as="script"><link rel="preload" href="/assets/js/25.226c9726.js" as="script"><link rel="prefetch" href="/assets/js/10.0c2a75e3.js"><link rel="prefetch" href="/assets/js/11.c2cefebf.js"><link rel="prefetch" href="/assets/js/12.3e4b60e8.js"><link rel="prefetch" href="/assets/js/13.4bfb52c2.js"><link rel="prefetch" href="/assets/js/14.01620091.js"><link rel="prefetch" href="/assets/js/15.c5660ef2.js"><link rel="prefetch" href="/assets/js/16.5bd3c34d.js"><link rel="prefetch" href="/assets/js/17.0f83c125.js"><link rel="prefetch" href="/assets/js/18.6fd4594a.js"><link rel="prefetch" href="/assets/js/19.a490569e.js"><link rel="prefetch" href="/assets/js/20.bc2bdfba.js"><link rel="prefetch" href="/assets/js/21.0cd4aa58.js"><link rel="prefetch" href="/assets/js/22.d681952d.js"><link rel="prefetch" href="/assets/js/23.975ca39c.js"><link rel="prefetch" href="/assets/js/24.337c4caa.js"><link rel="prefetch" href="/assets/js/26.fcddfcb5.js"><link rel="prefetch" href="/assets/js/3.b3bfea36.js"><link rel="prefetch" href="/assets/js/4.5087f035.js"><link rel="prefetch" href="/assets/js/5.d6a6b609.js"><link rel="prefetch" href="/assets/js/6.6a22f624.js"><link rel="prefetch" href="/assets/js/7.93cd504a.js"><link rel="prefetch" href="/assets/js/8.da0ff397.js"><link rel="prefetch" href="/assets/js/9.86537609.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.1da2d66b.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/" class="home-link router-link-active"><!----> <span class="site-name">蛮大人</span></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/" class="nav-link">
+  首页
+</a></div><div class="nav-item"><a href="/jsBasic/" class="nav-link">
+  jvascript
+</a></div><div class="nav-item"><a href="/htmlcss/" class="nav-link">
+  html+css
+</a></div><div class="nav-item"><a href="/vue/" class="nav-link router-link-active">
+  Vue
+</a></div><div class="nav-item"><a href="/react/" class="nav-link">
+  React
+</a></div><div class="nav-item"><a href="/node/" class="nav-link">
+  node
+</a></div><div class="nav-item"><a href="/tool/" class="nav-link">
+  工具
+</a></div><div class="nav-item"><a href="/net/" class="nav-link">
+  网络
+</a></div><div class="nav-item"><a href="/interview/" class="nav-link">
+  面试问题
+</a></div><div class="nav-item"><a href="/server/" class="nav-link">
+  服务器
+</a></div><div class="nav-item"><a href="/other/" class="nav-link">
+  其他
+</a></div> <!----></nav></div></header> <div class="sidebar-mask"></div> <aside class="sidebar"><nav class="nav-links"><div class="nav-item"><a href="/" class="nav-link">
+  首页
+</a></div><div class="nav-item"><a href="/jsBasic/" class="nav-link">
+  jvascript
+</a></div><div class="nav-item"><a href="/htmlcss/" class="nav-link">
+  html+css
+</a></div><div class="nav-item"><a href="/vue/" class="nav-link router-link-active">
+  Vue
+</a></div><div class="nav-item"><a href="/react/" class="nav-link">
+  React
+</a></div><div class="nav-item"><a href="/node/" class="nav-link">
+  node
+</a></div><div class="nav-item"><a href="/tool/" class="nav-link">
+  工具
+</a></div><div class="nav-item"><a href="/net/" class="nav-link">
+  网络
+</a></div><div class="nav-item"><a href="/interview/" class="nav-link">
+  面试问题
+</a></div><div class="nav-item"><a href="/server/" class="nav-link">
+  服务器
+</a></div><div class="nav-item"><a href="/other/" class="nav-link">
+  其他
+</a></div> <!----></nav>  <ul class="sidebar-links"><li><a href="/vue/" class="sidebar-link">vue</a></li><li><a href="/vue/lifeCycle.html" class="sidebar-link">Vue生命周期</a></li><li><a href="/vue/vueTheory.html" class="sidebar-link">vue原理</a></li><li><a href="/vue/vueRouter.html" class="sidebar-link">vue路由</a></li><li><a href="/vue/vuex.html" class="active sidebar-link">vuex</a></li><li><a href="/vue/vueSSR.html" class="sidebar-link">vue服务端渲染</a></li></ul> </aside> <main class="page"> <div class="theme-default-content content__default"><h1 id="vuex"><a href="#vuex" class="header-anchor">#</a> vuex</h1></div> <footer class="page-edit"><!----> <!----></footer> <div class="page-nav"><p class="inner"><span class="prev">
+      ←
+      <a href="/vue/vueRouter.html" class="prev">
+        vue路由
+      </a></span> <span class="next"><a href="/vue/vueSSR.html">
+        vue服务端渲染
+      </a>
+      →
+    </span></p></div> </main></div><div class="global-ui"></div></div>
+    <script src="/assets/js/app.e393c286.js" defer></script><script src="/assets/js/2.4ac4112c.js" defer></script><script src="/assets/js/25.226c9726.js" defer></script>
+  </body>
+</html>

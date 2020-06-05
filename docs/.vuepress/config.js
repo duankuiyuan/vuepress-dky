@@ -11,6 +11,8 @@ module.exports = {
           { text: 'Vue', link: '/vue/' },
           { text: 'React', link: '/react/' },
           { text: 'node', link: '/node/' },
+          { text: '前端设计模式', link: '/design/' },
+          { text: '数据结构与算法', link: '/structrue/' },
           { text: '工具', link: '/tool/' },
           { text: '网络', link: '/net/' },
           { text: '面试问题', link: '/interview/'},
@@ -19,13 +21,51 @@ module.exports = {
         ],
          //侧边栏配置
          sidebar: {
+            
             '/jsBasic/': [
               '',   
               'jsBasic',  
               'jsTheory',  
               'promise',
               'es6'  
-            ]
+            ],
+            '/interview/': [
+              '',   
+              'debounce',  
+              
+            ],
+            '/htmlcss/': [
+              '',   
+              'bfc',  
+              
+            ],
+            '/vue/': [
+              '',
+              'lifeCycle',   
+              'vueTheory',
+              'vueRouter', 
+              'vuex', 
+              'vueSSR', 
+              
+            ],
+            '/net/': [
+              '',
+              'tcp',   
+              'http',
+              'https', 
+              'cross-domain', 
+              
+            ],
+            '/structrue/': [
+              '',
+              'tree',   
+              'hashtable',   
+              'tu',
+              'complex', 
+              'order', 
+              'arithmetic', 
+              
+            ],
           }
       },
      
