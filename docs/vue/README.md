@@ -59,14 +59,19 @@ let vm = new Vue({
 ## 侦听器watch
 ## 插槽
 ## vm.$forceUpdate（）
-## vm.$forceUpdate()
+## vm.$nextTick()
+## vue.$mount()
 ## vue.component（）
 ## Vue.compile( template )
 ## vue.mixin（）
 ## vue.extend（）
-## vue.$mount()
 ## render()
 ## keep-alilve
 ## 选项 el
-## provide / inject
 ## vm.$el
+## vm.$data
+## vm.$props
+## vm.$options
+## $emit()
+## $on()
+## provide / inject

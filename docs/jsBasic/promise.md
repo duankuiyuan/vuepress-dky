@@ -3,6 +3,9 @@
 ### 1.1Promise基本含义
 #### 基本概念
 所谓的Promise，简单的来说是一个容器，里面保存着某个未来才会结束的事件（通常是一个异步操作）的结果。从语法上来说Promise是一个对象，从它可以获取到异步操作的消息。
+#### Promise可以解决的问题
++ 多个请求并发，希望同步最终的结果。Promise.all
++ 链式异步请求的问题，回调地狱。Promise的链式调用可以解决这个问题
 #### Promise对象有两个特点
 + 对象的状态不受外界影响。Promise对象代表一个异步操作，有3种状态：Pending（进行中）、Fulfilled（已成功）、和Reject（已失败）
 + 一旦状态改变就不会再变，任何时候都可以得到这个结果。Promise的状态改变只有两种可能：Pending到Fulfilled和从Pending到Rejected。只要这两种情况发生，状态就凝固了，不会再变，而是一直保持着这种结果，这时就称为Resolved。就算改变已经发生，再对Promise添加回调函数，也会立即得到这个结果
@@ -187,6 +190,7 @@ return promise;
   ```js
   function currying(fn,...arg){
       let len = fn.length;
+      //利用闭包特性保存上次参数 arg
       return function(...args){
         let newArgs = [...arg,...args];
         if(newArgs.length < len){
@@ -301,7 +305,118 @@ return promise;
   subject.setState("哭哭哭");
   ```
   ## 7.Promise/A+完整实现
-  ### 7.1内部原理
-  + new Promise时传入一个函数(resolve,reject) =>{}，这个函数会被立即执行
-  + new Promise时候立即执行传入的这个函数，参数 resolve和reject 为Promise内部定义好的两个函数，这两个函数会根据状态的变化去调用then方法传入的成功和失败函数
-  + then(sucessFn,errFn) then方法会保存sucessFn，errFn以供resolve和reject方法执行时调用
+
+  ### 7.1内部流程
+  + new Promise时传入一个函数(resolve,reject) =>{}，这个函数会被立即执行；若这个函数是异步就意味着，resolve和reject执行时then方法已经执行过了，所以then方法会判断，promise的状态为RESOLVED和REJECTED时，说明传入的执行函数没有异步（resolve，reject已经被执行，状态被改变），此时then方法会直接执行回调。若promise的状态为PENDING时，说明，立即执行的函数里是异步的（resolve，reject未被执行，状态为改变），此时then方法会判断状态为PENDING，然后将回调函数储存起来，当异步逻辑执行完毕后，resolve和reject函数就会被执行，此时才会改变promise状态并且执行then方法保存的回调函数
+  + new Promise时候立即执行传入的这个函数，参数 resolve和reject 为Promise内部定义好的两个函数，这两个函数会判断状态为PENDING将resolve和reject的参数保存为成功和失败的原因并且将状态改为RESOLVED和REJECTED，并且执行then方法里储存的回调函数（可能没有）
+  + then(sucessFn,errFn) then方法会判断状态，为RESOLVED和REJECTED时说明resolve和reject已经执行了（Promse的函数参数不是异步）；为PENDING说明resolve和reject没有被执行（Promse的函数参数是异步），因为reslove和reject会去改变状态，此时将sucessFn和errFn储存起来，待异步流程执行之后会执行resolve和reject方法，在resolve和reject方法里面会执行储存起来的sucessFn和errFn
+  ### 7.2Promise实现规范
+  + Promise是一个类
+  + promise有三个状态，成功状态（resolve）失败状态（reject）等待状态（pending）
+  + 用户自己决定失败和成功的原因（resolve和reject的参数），成功和失败也是用户定义的（then方法的参数）
+  + Promise执行期立即执行
+  + Promise的实例都有一个then方法，一个参数是成功的回调，另一个是失败的回调
+  + 如果执行函数发生了异常也会执行失败的逻辑
+  + 如果Promise一旦成功就不能失败（只有等待状态下才能去更改状态）
+  ### 7.3基本Promise
+  ```js
+  const PENDING = "PENDING";
+  const RESOLVE = "RESOLVE";
+  const REJECT = "REJECT";
+  class Promise{
+    constructor(excuter){
+      this.status = PENDING;
+      this.value = undefined;
+      this.reason = undefined;
+      //reject resolve 改变promise的状态,保存失败和成功的参数值
+      let reject = (value)=>{
+        if(this.status == PENDING){
+           this.value = value;
+           this.status = RESOLVE;
+        }
+      }
+      let resolve = (reason)=>{
+        if(this.status == PENDING){
+           this.reason = reason;
+           this.status = REJECT;
+        }
+      }
+      try {
+        //立即执行Promise的参数，实参为Promise定义的resolve和reject
+        excuter(resolve,reject);
+      } catch (e) {
+        reject(e)
+      }
+    }
+    then(onFullFiled,onSucess){
+      if(this.status == RESOLVE){
+         onFullFiled(this.value);
+      }
+       if(this.status == REJECT){
+          onSucess(this.reason)  
+      }
+    }
+  }
+
+  ```
+  ### 7.4Promise的then方法，excuter里是异步逻辑then的处理
+  + then方法执行的时候有可能 resolve和reject还没有被执行，此时在then方法里将回调函数都存储起来，等到resolve和reject执行时候再将回调函数执行
+  ```js
+  const PENDING = "PENDING";
+  const RESOLVE = "RESOLVE";
+  const REJECT = "REJECT";
+  class Promise{
+    constructor(excuter){
+        this.status = PENDING;
+        this.value = undefined;
+        this.reason = undefined;
+        this.onResoveCallbacks = [];
+        this.onRejectCallbacks = [];
+        let resolve = (value) =>{
+           if(this.status == PENDING){
+            this.value = value;
+            this.status = RESOLVE;
+            this.onResoveCallbacks.forEach(fn => fn());
+           }
+        }
+        let reject = (reason) =>{
+            if(this.status == PENDING){
+              this.reason = reason;
+              this.status = REJECT;
+              this.onRejectCallbacks.forEach(fn => fn())
+           }
+        }
+        try {
+            excuter(resolve, reject)
+        } catch (e) {
+            reject(e)
+        }
+
+    }
+    then(onFulfilled,onRejected){
+       if(this.status == RESOLVE){
+          onFulfilled(this.vaue)
+       }
+       if(this.status == REJECT){
+          onRejected(this.reason)
+       }
+       if(this.status == PENDING){
+          this.onResoveCallbacks.push(() =>{
+            //todo...
+            onFulfilled(this.value)
+          });
+           this.onRejectCallbacks.push(() =>{
+             //todo...
+            onRejected(this.reason)
+          });
+       }
+    }
+  }
+
+  ```
+  ### 7.5Promise的链式调用
+  + 1.promise成功和失败的回调（then方法的参数）的返回值，可以传递到外层的下一个then（then的回调函数的参数）
+  + 2.如果返回的是普通值的话（不是promise且不是错误）直接传递到下次的成功中，出错的情况下一定会走到下一次的失败
+  ，如果返回的是promise的话，会根据promise的状态决定下一次是成功还是失败
+  + 3.错误处理，如果离自己最近的then没有错误处理函数（没有写），会向下找
+  + 4.每次执行完promise.then方法后返回的都是一个新的promise，（promise一旦成功或者失败状态就不能再修改）

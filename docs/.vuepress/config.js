@@ -1,7 +1,7 @@
 module.exports = {
     title:"蛮大人",
     description:'小前端',
-    
+    base: '/vuepress/',// 设置站点根路径
     themeConfig: {
         //导航栏配置
         nav: [
@@ -47,6 +47,9 @@ module.exports = {
               'vuex', 
               'vueSSR', 
               
+            ],
+            '/react/': [
+              ''
             ],
             '/net/': [
               '',
