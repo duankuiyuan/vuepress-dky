@@ -109,3 +109,30 @@ function greeting(name) {
 + 可以让 setState() 接收一个函数而不是一个对象。这个函数用上一个 state 作为第一个参数
 + props：该数据是由组件的使用者传递的数据，所有权不属于组件自身，因此组件无法改变该数组
 + state：该数组是由组件自身创建的，所有权属于组件自身，因此组件有权改变该数据
+## 深入认识setState
++ setState中状态的改变可能是异步的
+  + 如果改变状态的代码处于某个html元素的事件中，则是异步的，否则是同步的
++ setState第二个参数接收一个函数，在状态改变后（render执行后）可获取改变后的sate
++ setState第一个参数可接受一个函数（解决多次改变状态的情况）
+```js
+state = {
+    n:0
+}
+this.setState({
+    n:this.state.n +1
+})
+this.setState({
+    n:this.state.n +1
+})
+this.setState({
+    n:this.state.n +1
+})
+//此时n的值仍为1
+//因为setState是异步执行的 当执行时候n的初始值始终为0
+this.setState((state)=>{n:state.n +1});
+this.setState((state)=>{n:state.n +1});
+this.setState((state)=>{n:state.n +1});
+//此时n的值为3
+//因为(state)=>{n:state.n +1} 中的state是被改变之后的，且该函数也是异步直至执行的
+```
++ react会队setState进行优化，将多个setState进行合并，将多次状态改变完成过后，再统一对state进行改变，出发render函数。所以上述情况状态改了三次，render只触发一次
