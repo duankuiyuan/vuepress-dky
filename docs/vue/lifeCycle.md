@@ -1,6 +1,15 @@
 # Vue生命周期
 ## 生命周期
 ![An image](./imgs/lifeCycle.png)
+## 生命周期被调用时机
++ beforeCreate在实例初始化之后，（data observe）数据观测之前被调用
++ created 实例已经创建之后被调用（initState(vm)）。在这一步，实例已经完成以下配置：数据观测（data observe），计算属性和方法的运算，watch，event事件回调。这里没有$el
++ beforeMount在挂载之前被调用：相关的render函数首次被调用
++ mounted el被新创建的$el替换，并挂载到实例上之后调用该钩子
++ beforeUpdate数据更新时调用，发生在虚拟dom重新渲染和打补丁之前
++ updated由于数据更新导致虚拟dom重新渲染和打补丁，在这之后会调用该钩子
++ beforeDestroy实例销毁之前调用。在这一步，实例仍然完全可用
++ destoryed vue实例销毁之后调用。调用后，vue实例指示的所有东西都会解绑，所有的事件监听会被移除，所有子实例也会被销毁。改钩子在服务端渲染时不被调用
 ## 钩子函数
 ### Vue.mixin
 ```js

@@ -109,7 +109,7 @@ function greeting(name) {
 + 可以让 setState() 接收一个函数而不是一个对象。这个函数用上一个 state 作为第一个参数
 + props：该数据是由组件的使用者传递的数据，所有权不属于组件自身，因此组件无法改变该数组
 + state：该数组是由组件自身创建的，所有权属于组件自身，因此组件有权改变该数据
-## 深入认识setState
+## setState
 + setState中状态的改变可能是异步的
   + 如果改变状态的代码处于某个html元素的事件中，则是异步的，否则是同步的
 + setState第二个参数接收一个函数，在状态改变后（render执行后）可获取改变后的sate
@@ -137,6 +137,7 @@ this.setState((state)=>{n:state.n +1});
 ```
 + react会队setState进行优化，将多个setState进行合并，将多次状态改变完成过后，再统一对state进行改变，出发render函数。所以上述情况状态改了三次，render只触发一次
 ## react生命周期（旧版）React < 16.0.0
+![An image](./imgs/lifecyleOld.png) 
 1. constructor
    1. 同一个组件只会创建一次
    2. 不能在第一次挂载到页面之前调用setState，为了避免问题，构造函数中严禁使用setState
@@ -155,7 +156,7 @@ this.setState((state)=>{n:state.n +1});
 6. componentWillReceiveProps
    1. 即将接收新的属性值
    2. 参数为新的属性值
-   3. 该函数可能会导致一些
+   3. 该函数可能会导致一些bug
 7. **shouldComponentUpdate**
    1. 指示react是否需要重新渲染该组件，通过返回true和false来指定
    2. 默认情况下，会直接返回true
@@ -165,6 +166,143 @@ this.setState((state)=>{n:state.n +1});
    1. 往往在该函数中进行dom操作，改变元素
 10. **componentWillUnmount**
    1.通常在函数中销毁一些组件依赖的资源，比如计时器
+## react生命周期（新版） >= 16.0.0
+![An image](./imgs/lifecyleNew.png) 
++ React官方认为某个数据的来源必须是单一的
+1. getDerivedStateFromProps
+  1. 通过参数可以获取新的属性和状态
+  2. 该函数是静态的
+  3. 该函数的返回值会覆盖掉组件状态
+  4. 该函数几乎是没有什么用
+2. getSnapshotBeforeUpdate
+  1. 真实的DOM构建完成，但还未实际渲染到页面中。
+  2. 在该函数中，通常用于实现一些附加的dom操作
+  3. 该函数的返回值，会作为componentDidUpdate的第三个参数
+## 高阶组件（HOC）
++ HOF：Higher-Order Function, 高阶函数，以函数作为参数，并返回一个函数
++ HOC: Higher-Order Component, 高阶组件，以组件作为参数，并返回一个组件
 
+>举例：20个组件，每个组件在创建组件和销毁组件时，需要作日志记录
+```js
+/**
+ * 高阶组件
+ * @param {*} comp 组件
+ */
+export default function withLog(Comp,str){
+    return class LogWrapper extends React.Component{
+       componentDidMount() {
+            console.log(`日志：组件${Comp.name}被创建了！${Date.now()}`);
+        }
+        componentWillUnmount() {
+            console.log(`日志：组件${Comp.name}被销毁了！${Date.now()}`);
+        }
+      render(){
+        return(
+          <>
+           <h1>{str}</h1>
+           <Comp {...this.props}>
+          </>
+        )
+      }
+    }
+}
+//使用高阶组件
+class A extends React.Component{
+    //不再关注跟该组件不相关的事情
+    render(){
+        return <h1>A:{this.props.a}</h1>
+    }
+}
 
-## react生命周期（新版）
+let AComp = withLog(A,"aadsa");
+<div>
+<AComp/>
+</div>
+```
+## ref
++ refs提供了一种方式，允许我们访问DOM节点或者在render方法中创建的React元素
++ ref的三种创建方式
+  >1.String类型绑定。类似于vue中的ref绑定方式，可以通过this.refs[绑定的ref的名字]来获取dom，但这种方式不是最新版本react推荐的使用
+  ```js
+   import React, { Component } from 'react'
+   export default class index extends Component {
+        constructor(props){
+            super(props) 
+        }
+        componentDidMount(){
+            console.log(this.refs.aa)
+        }
+        render() {
+            return (
+                <div ref ="aa">
+                    ref
+                </div>
+            )
+        }
+    }
+  ```
+  >2.react.CreateRef()。通过在class中使用React.createRef()方法创建一些变量，可以将这些变量绑定到标签的ref中
+那么该变量的current则指向绑定的标签dom
+  ```js
+    import React, { Component } from 'react'
+   export default class index extends Component {
+      aa = React.createRef()
+      constructor(props) {
+          super(props)
+      }
+      componentDidMount() {
+          console.log(this.aa.current)
+      }
+      render() {
+          return (
+              <div ref={this.aa}>
+                  ref
+              </div>
+          )
+      }
+  ```
+  >3.函数方式。在class中声明函数，在函数中绑定ref
+使用这种方法可以将子组件暴露给父组件以使得父组件能够调用子组件的方法
+  ```js
+    import React, { Component } from 'react'
+    export default class index extends Component {
+          constructor(props){
+              super(props) 
+          }
+          refFn = el => this.aa = el;
+          componentDidMount(){
+              console.log(this.aa)
+          }
+          render() {
+              return (
+                  <div ref ={this.refFn}>
+                      ref
+                  </div>
+              )
+          }
+      }
+  ```
++ ref转发
+  - Ref 转发是一项将 ref 自动地通过组件传递到其一子组件的技巧。函数组件本身没有ref属性，但想要获取它内部的dom元素可以使用React.forwardRef
+  ```js
+   import React, { Component } from 'react'
+   export default class index extends Component {
+        ref = React.createRef();
+        componentDidMount() {
+            console.log(this.ref.current)
+        }
+        render() {
+            let FancyButton = React.forwardRef((props, ref) => (
+                <button ref={ref} className="FancyButton">
+                    {props.children}
+                </button>
+            ));
+            return (
+                <div>
+                    <FancyButton ref={this.ref}>Click me!</FancyButton>;
+                </div>
+            )
+        }
+    }
+  ```
+

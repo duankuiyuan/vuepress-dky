@@ -36,7 +36,8 @@ module.exports = {
             ],
             '/htmlcss/': [
               '',   
-              'bfc',  
+              'bfc',
+               'flex'  
               
             ],
             '/vue/': [

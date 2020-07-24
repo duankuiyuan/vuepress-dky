@@ -1,11 +1,13 @@
 # js 基本原理
-## 1 js作用域、预编译、作用域链、闭包
-## 1.1js作用域
-## 2 js原型、原型链、继承
-## 3.1 this概述
+## 1js作用域、作用域链
+## 预编译
+## 闭包
+## js原型、原型链
+## js继承
+## this概述
    + 在绝大多数情况下，函数的调用方式决定了this的值。this不能在执行期间被赋值，并且在每次函数被调用时this的值也可能会不同，es5引入bind的方法来设置函数的this的值，而不用考虑函数是如何被调用的，es6引入了支持词法分析的箭头函数（它在闭合的执行环境内设置this的值）
    + javascript函数中的this并不是函数定义时候确定的，而是在函数调用的时候确定的。换句话说，函数的调用方式决定了this的指向。
-## 3.1.1 this全局环境
+## this全局环境
 + 无论是否在严格模式下，在全局执行环境中（在任何函数体外部）this 都指向全局对象。
 ``` js
   // 在浏览器中, window 对象同时也是全局对象：
@@ -22,7 +24,7 @@ console.log(b)         // "mdr"
 你可以使用 globalThis 获取全局对象，无论你的代码是否在当前上下文运行。
 :::
 
-## 3.1.2 this函数（运行内）环境
+## this函数（运行内）环境
 ::: tip 提示
 在函数内部，this的值取决于函数被调用的方式。
 :::
@@ -238,7 +240,7 @@ console.log(o.a); // logs 38
 在刚刚的例子中（C2），因为在调用构造函数的过程中，手动的设置了返回对象，与this绑定的默认对象被丢弃了。（这基本上使得语句 “this.a = 37;”成了“僵尸”代码，实际上并不是真正的“僵尸”，这条语句执行了，但是对于外部没有任何影响，因此完全可以忽略它）。
 :::
 
-## 3.2 javascript this的原理（阮一峰版）
+## javascript this的原理（阮一峰版）
    #### （1）问题的由来
 ``` js
     var obj = {
@@ -356,7 +358,7 @@ obj.f() // 2onsole.log(this.x);
 + 在obj环境执行，this.x指向obj.x。
 + 回到本文开头提出的问题，obj.foo()是通过obj找到foo，所以就是在obj环境执行。一旦var foo = obj.foo，变量foo就直接指向函数本身，所以foo()就变成在全局环境执行。
 :::
-## 3.3 js this 之 call
+## this 之 call
 ### call方法用来执行方法并且改变方法内的this，第一个参数是新的this，后面参数为方法的参数，用逗号隔开
 ```js
 //                                   新的this   其他参数
@@ -374,7 +376,7 @@ let fn = function(){
 fn.myCall(obj)
 }
 ```
-## 3.4 js this 之 apply
+## this 之 apply
 ### apply方法用来执行方法并且改变方法内的this，第一个参数是新的this，后面的参数为一个数组
 ```js
 Function.prototype.myApply = function(content,...args){
@@ -392,7 +394,7 @@ let fn = function(a){
 }
 fn.myApply(obj,['12'])
 ```
-## 3.5 js this 之 bind
+##  this 之 bind
 ### bind
 ```js
 Function.prototype.myBind = function(target,...args){
@@ -415,8 +417,74 @@ let fn = function(a,b){
 }
 let newFn = fn.myBind(obj,'bind');
 newFn('第二参');
-```
-## 4 页面加载
-       
+```       
 ## 5 浏览器事件环
-## 6 事件流
+## 6 事件冒泡、事件捕获、事件委托
+#### 1. 基本概念
+  + **捕获阶段**
+    - 浏览器检查元素的最外层祖先html是否在捕获阶段中注册了一个onclick事件处理程序，如果是则运行它
+    - 然后它移到html中的下一个元素，并执行相同操作，然后是下一个元素，依次类推，直到达到实际点击的元素
+  + **冒泡阶段**
+    - 浏览器检查实际点击的元素是否在冒泡阶段中注册了一个onclick事件处理程序，如果是，则运行它
+    - 然后它移动到下一个直接的祖先元素，并做同样的事情，然后是下一个，等等，直到它到达html元素。
+  + **在现代浏览器中，默认情况下，所有事件处理程序都在冒泡阶段进行注册。** 
+  + **事件是先捕获再冒泡的**
+  + **事件委托**
+    - 事件委托是利用事件的冒泡原理来实现的，何为事件冒泡呢？就是事件从最深的节点开始，然后逐步向上传播事件，举个例子：页面上有这么一个节点树，div>ul>li>a;比如给最里面的a加一个click点击事件，那么这个事件就会一层一层的往外执行，执行顺序a>li>ul>div，有这样一个机制，那么我们给最外面的div加点击事件，那么里面的ul，li，a做点击事件的时候，都会冒泡到最外层的div上，所以都会触发，这就是事件委托，委托它们父级代为执行事件。
+### 2.事件绑定
+  + **原生函数**
+  ```html
+  <input onclick="alert('谢谢支持')" type="button" value="点击我，弹出警告框" />
+  ```
+  ```js
+  <input onclick="myAlert()" type="button" value="点击我，弹出警告框" />
+  <script type="text/javascript">
+    function myAlert(){
+    alert("谢谢支持");
+    }
+  </script>
+  ```
+  + **在js中赋值绑定**
+  ```js
+  <input id="demo" type="button" value="点击我，显示 type 属性" />
+  <script type="text/javascript">
+    document.getElementById("demo").onclick=function(){
+    alert(this.getAttribute("type")); // this 指当前发生事件的HTML元素，这里是<div>标签
+    }
+  </script>
+  ```
+  + **绑定事件监听函数** addEventListener()  attachEvent()
+  ```js
+  function addEvent(obj,type,handle){
+        try{ // Chrome、FireFox、Opera、Safari、IE9.0及其以上版本
+          obj.addEventListener(type,handle,false);//第三个参数是个布尔值。默认是false（冒泡阶段执行）true(捕获阶段产生)
+        }catch(e){
+        try{ // IE8.0及其以下版本
+         obj.attachEvent('on' + type,handle);
+        }catch(e){ // 早期浏览器
+         obj['on' + type] = handle;
+        }
+      }
+    }
+  ```
+  ### 3.阻止冒泡和捕获
+  + w3c的方法是e.stopPropagation()，IE则是使用e.cancelBubble = true
+  ```js
+  window.event? window.event.cancelBubble = true : e.stopPropagation();
+  ```
+ ### 4.取消默认行为
+   + w3c的方法是e.preventDefault()，IE则是使用e.returnValue = false;
+ ```js
+  //假定有链接<a href="http://baidu.com/" id="a" >caibaojian.com</a>
+  var a = document.getElementById("a");
+    a.onclick =function(e){
+    if(e.preventDefault){
+    e.preventDefault();
+    }else{
+    window.event.returnValue == false;
+    }
+  }
+ ```
+
+
+
