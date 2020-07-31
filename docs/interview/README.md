@@ -118,5 +118,3 @@ let uncurFn = func.uncurring();
 let uncurFn = uncurring(func)
 uncurFn(obj,"的小妾"); 
 ```
-## 性能优化
-## 长列表优化 虚拟列表

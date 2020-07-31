@@ -32,6 +32,10 @@ module.exports = {
             '/interview/': [
               '',   
               'debounce',  
+              'htm', 
+              'css', 
+              'net', 
+              'browser', 
               
             ],
             '/htmlcss/': [
@@ -50,6 +54,9 @@ module.exports = {
               
             ],
             '/react/': [
+              ''
+            ],
+            '/tool/': [
               ''
             ],
             '/net/': [
