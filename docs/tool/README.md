@@ -174,3 +174,165 @@ chunk是webpack在内部构建过程中的一个概念，译为```块```，它�
 5. chunkhash：chunk生成的资源清单内容联合生成的hash值
 6. chunkname：chunk的名称，如果没有配置则使用main
 7. id：通常指chunk的唯一编号，如果在开发环境下构建，和chunkname相同；如果是生产环境下构建，则使用一个从0开始的数字进行编号
+## 出口与入口
+### 一个页面一个js
+![](./imgs/2020-01-10-12-00-28.png)
+
+源码结构
+
+```
+|—— src
+    |—— pageA   页面A的代码目录
+        |—— index.js 页面A的启动模块
+        |—— ...
+    |—— pageB   页面B的代码目录
+        |—— index.js 页面B的启动模块
+        |—— ...
+    |—— pageC   页面C的代码目录
+        |—— main1.js 页面C的启动模块1 例如：主功能
+        |—— main2.js 页面C的启动模块2 例如：实现访问统计的额外功能
+        |—— ...
+    |—— common  公共代码目录
+        |—— ...
+```
+**webpack配置**
+```js
+module.exports = {
+    entry:{
+        pageA: "./src/pageA/index.js",
+        pageB: "./src/pageB/index.js",
+        pageC: ["./src/pageC/main1.js", "./src/pageC/main2.js"]
+    },
+    output:{
+        filename:"[name].[chunkhash:5].js"
+    }
+}
+```
+这种方式适用于页面之间的功能差异巨大、公共代码较少的情况，这种情况下打包出来的最终代码不会有太多重复
+### 一个页面多个JS
+![](./imgs/2020-01-10-12-38-03.png)
+
+源码结构
+
+```
+|—— src
+    |—— pageA   页面A的代码目录
+        |—— index.js 页面A的启动模块
+        |—— ...
+    |—— pageB   页面B的代码目录
+        |—— index.js 页面B的启动模块
+        |—— ...
+    |—— statistics   用于统计访问人数功能目录
+        |—— index.js 启动模块
+        |—— ...
+    |—— common  公共代码目录
+        |—— ...
+```
+**webpack配置**
+
+```js
+module.exports = {
+    entry:{
+        pageA: "./src/pageA/index.js",
+        pageB: "./src/pageB/index.js",
+        statistics: "./src/statistics/index.js"
+    },
+    output:{
+        filename:"[name].[chunkhash:5].js"
+    }
+}
+```
+这种方式适用于页面之间有一些**独立**、相同的功能，专门使用一个chunk抽离这部分JS有利于浏览器更好的缓存这部分内容。
+
+### 单页应用
+
+所谓单页应用，是指整个网站（或网站的某一个功能块）只有一个页面，页面中的内容全部靠JS创建和控制。 vue和react都是实现单页应用的利器。
+
+![](./imgs/2020-01-10-12-44-13.png)
+
+源码结构
+
+```
+|—— src
+    |—— subFunc   子功能目录
+        |—— ...
+    |—— subFunc   子功能目录
+        |—— ...
+    |—— common  公共代码目录
+        |—— ...
+    |—— index.js
+```
+webpack配置
+
+```js
+module.exports = {
+    entry: "./src/index.js",
+    output:{
+        filename:"index.[hash:5].js"
+    }
+}
+```
+## loader
+> webpack做的事情，仅仅是分析出各种模块的依赖关系，然后形成资源列表，最终打包生成到指定的文件中。
+> 更多的功能需要借助webpack loaders和webpack plugins完成。
+
+webpack loader： loader本质上是一个函数，它的作用是将某个源码字符串转换成另一个源码字符串返回。
+
+![](./imgs/2020-01-13-10-39-24.png)
+
+loader函数的将在模块解析的过程中被调用，以得到最终的源码。
+
+**全流程：**
+
+![](./imgs/2020-01-13-09-28-52.png)
+
+**chunk中解析模块的流程：**
+
+![](./imgs/2020-01-13-09-29-08.png)
+
+**chunk中解析模块的更详细流程：**
+
+![](./imgs/2020-01-13-09-35-44.png)
+
+**处理loaders流程：**
+
+![](./imgs/2020-01-13-10-29-54.png)
+
+### loader配置
+
+**完整配置**
+
+```js
+module.exports = {
+    module: { //针对模块的配置，目前版本只有两个配置，rules、noParse
+        rules: [ //模块匹配规则，可以存在多个规则
+            { //每个规则是一个对象
+                test: /\.js$/, //匹配的模块正则
+                use: [ //匹配到后应用的规则模块
+                    {  //其中一个规则
+                        loader: "模块路径", //loader模块的路径，该字符串会被放置到require中
+                        options: { //向对应loader传递的额外参数
+
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}
+```
+**简化配置**
+
+```js
+module.exports = {
+    module: { //针对模块的配置，目前版本只有两个配置，rules、noParse
+        rules: [ //模块匹配规则，可以存在多个规则
+            { //每个规则是一个对象
+                test: /\.js$/, //匹配的模块正则
+                use: ["模块路径1", "模块路径2"]//loader模块的路径，该字符串会被放置到require中
+            }
+        ]
+    }
+}
+```
+
