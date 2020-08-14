@@ -1,4 +1,4 @@
-# webpack
+# webpack 基础
 ## 基本概念
 ### webapck简介
 webpack是基于模块化的打包（构建）工具，它把一切视为模块
@@ -698,3 +698,663 @@ cnpm install webpack-dev-server
     },
   
 ```
+## 普通文件处理
+### file-loader
+生成依赖文件到输出目录，然后将模块文件设置为：导出一个路径
+```js
+//file-loader
+function loader(source){
+	// source：文件内容（图片内容 buffer）
+	// 1. 生成一个具有相同文件内容的文件到输出目录
+	// 2. 返回一段代码   export default "文件名"
+}
+```
+### url-loader
+将依赖的文件转换为：导出一个base64格式的字符串
+```js
+//file-loader
+function loader(source){
+	// source：文件内容（图片内容 buffer）
+	// 1. 根据buffer生成一个base64编码
+	// 2. 返回一段代码   export default "base64编码"
+}
+```
+## 解决路径问题
+
+在使用file-loader或url-loader时，可能会遇到一个非常有趣的问题
+
+比如，通过webpack打包的目录结构如下：
+
+```yaml
+dist
+    |—— img
+        |—— a.png  #file-loader生成的文件
+    |—— scripts
+        |—— main.js  #export default "img/a.png"
+    |—— html
+        |—— index.html #<script src="../scripts/main.js" ></script>
+```
+
+这种问题发生的根本原因：模块中的路径来自于某个loader或plugin，当产生路径时，loader或plugin只有相对于dist目录的路径，并不知道该路径将在哪个资源中使用，从而无法确定最终正确的路径
+
+面对这种情况，需要依靠webpack的配置publicPath解决
+## webpack内置插件 {ignore}
+
+所有的webpack内置插件都作为webpack的静态属性存在的，使用下面的方式即可创建一个插件对象
+
+```js
+const webpack = require("webpack")
+
+new webpack.插件名(options)
+```
+
+### DefinePlugin
+
+全局常量定义插件，使用该插件通常定义一些常量值，例如：
+
+```js
+new webpack.DefinePlugin({
+    PI: `Math.PI`, // PI = Math.PI
+    VERSION: `"1.0.0"`, // VERSION = "1.0.0"
+    DOMAIN: JSON.stringify("duyi.com")
+})
+```
+
+这样一来，在源码中，我们可以直接使用插件中提供的常量，当webpack编译完成后，会自动替换为常量的值
+
+### BannerPlugin
+
+它可以为每个chunk生成的文件头部添加一行注释，一般用于添加作者、公司、版权等信息
+
+```js
+new webpack.BannerPlugin({
+  banner: `
+  hash:[hash]
+  chunkhash:[chunkhash]
+  name:[name]
+  author:yuanjin
+  corporation:duyi
+  `
+})
+```
+
+### ProvidePlugin
+
+自动加载模块，而不必到处 import 或 require 
+
+```js
+new webpack.ProvidePlugin({
+  $: 'jquery',
+  _: 'lodash'
+})
+```
+
+然后在我们任意源码中：
+
+```js
+$('#item'); // <= 起作用
+_.drop([1, 2, 3], 2); // <= 起作用
+```
+## 利用webpack拆分css
+要拆分css，就必须把css当成js那样的模块；要把css当成模块，就必须有一个构件工具（webpack），它具备合并代码的能力，而webpack本身只能读取css文件的内容，将其当做js代码进行分析，因此会导致错误
+
+于是，就必须有一个loader，能将css代码转换为js代码
+### css-loader
+css-loader的作用，就是将css代码转换为js代码
+
+它的处理原理极其简单：将css代码作为字符串导出
+
+例如：
+```css
+.red{
+    color:"#f40";
+}
+```
+经过css-loader转换后变成js代码：
+```js
+module.exports = `.red{
+    color:"#f40";
+}`
+```
+> 上面的js代码是经过我简化后的，不代表真实的css-loader的转换后代码，css-loader转换后的代码会有些复杂，同时会导出更多的信息，但核心思想不变
+再例如：
+```css
+.red{
+    color:"#f40";
+    background:url("./bg.png")
+}
+```
+经过css-loader转换后变成js代码：
+```js
+var import1 = require("./bg.png");
+module.exports = `.red{
+    color:"#f40";
+    background:url("${import1}")
+}`;
+```
+这样一来，经过webpack的后续处理，会把依赖```./bg.png```添加到模块列表，然后再将代码转换为
+
+```js
+var import1 = __webpack_require__("./src/bg.png");
+module.exports = `.red{
+    color:"#f40";
+    background:url("${import1}")
+}`;
+```
+再例如：
+```css
+@import "./reset.css";
+.red{
+    color:"#f40";
+    background:url("./bg.png")
+}
+```
+会转换为：
+```js
+var import1 = require("./reset.css");
+var import2 = require("./bg.png");
+module.exports = `${import1}
+.red{
+    color:"#f40";
+    background:url("${import2}")
+}`;
+```
+**总结，css-loader干了什么：**
+
+1. 将css文件的内容作为字符串导出
+2. 将css中的其他依赖作为require导入，以便webpack分析依赖
+
+### style-loader
+由于css-loader仅提供了将css转换为字符串导出的能力，剩余的事情要交给其他loader或plugin来处理
+
+style-loader可以将css-loader转换后的代码进一步处理，将css-loader导出的字符串加入到页面的style元素中
+
+例如：
+
+```css
+.red{
+    color:"#f40";
+}
+```
+经过css-loader转换后变成js代码：
+```js
+module.exports = `.red{
+    color:"#f40";
+}`
+```
+经过style-loader转换后变成：
+```js
+module.exports = `.red{
+    color:"#f40";
+}`
+var style = module.exports;
+var styleElem = document.createElement("style");
+styleElem.innerHTML = style;
+document.head.appendChild(styleElem);
+module.exports = {}
+```
+> 以上代码均为简化后的代码，并不代表真实的代码
+> style-loader有能力避免同一个样式的重复导入
+
+## css module {ignore}
+
+> 通过命名规范来限制类名太过死板，而css in js虽然足够灵活，但是书写不便。
+> css module 开辟一种全新的思路来解决类名冲突的问题
+
+### 思路
+
+css module 遵循以下思路解决类名冲突问题：
+
+1. css的类名冲突往往发生在大型项目中
+2. 大型项目往往会使用构建工具（webpack等）搭建工程
+3. 构建工具允许将css样式切分为更加精细的模块
+4. 同JS的变量一样，每个css模块文件中难以出现冲突的类名，冲突的类名往往发生在不同的css模块文件中
+5. 只需要保证构建工具在合并样式代码后不会出现类名冲突即可
+
+![](./imgs/2020-01-31-13-54-37.png)
+
+### 实现原理
+
+在webpack中，作为处理css的css-loader，它实现了css module的思想，要启用css module，需要将css-loader的配置```modules```设置为```true```。
+
+css-loader的实现方式如下：
+
+![](./imgs/2020-01-31-14-00-56.png)
+
+原理极其简单，开启了css module后，css-loader会将样式中的类名进行转换，转换为一个唯一的hash值。
+
+由于hash值是根据模块路径和类名生成的，因此，不同的css模块，哪怕具有相同的类名，转换后的hash值也不一样。
+
+![](./imgs/2020-01-31-14-04-11.png)
+
+### 如何应用样式
+
+css module带来了一个新的问题：源代码的类名和最终生成的类名是不一样的，而开发者只知道自己写的源代码中的类名，并不知道最终的类名是什么，那如何应用类名到元素上呢？
+
+为了解决这个问题，css-loader会导出原类名和最终类名的对应关系，该关系是通过一个对象描述的
+
+![](./imgs/2020-01-31-14-08-49.png)
+
+这样一来，我们就可以在js代码中获取到css模块导出的结果，从而应用类名了
+
+style-loader为了我们更加方便的应用类名，会去除掉其他信息，仅暴露对应关系
+
+### 其他操作
+
+**全局类名** 
+
+某些类名是全局的、静态的，不需要进行转换，仅需要在类名位置使用一个特殊的语法即可：
+
+```css
+:global(.main){
+    ...
+}
+```
+
+使用了global的类名不会进行转换，相反的，没有使用global的类名，表示默认使用了local
+
+```css
+:local(.main){
+    ...
+}
+```
+
+使用了local的类名表示局部类名，是可能会造成冲突的类名，会被css module进行转换
+
+**如何控制最终的类名**
+
+绝大部分情况下，我们都不需要控制最终的类名，因为控制它没有任何意义
+
+如果一定要控制最终的类名，需要配置css-loader的```localIdentName```
+
+### 其他注意事项
+
+- css module往往配合构建工具使用
+- css module仅处理顶级类名，尽量不要书写嵌套的类名，也没有这个必要
+- css module仅处理类名，不处理其他选择器
+- css module还会处理id选择器，不过任何时候都没有使用id选择器的理由
+- 使用了css module后，只要能做到让类名望文知意即可，不需要遵守其他任何的命名规范
+## babel的安装和使用
+babel可以和构建工具联合使用，也可以独立使用
+
+如果要独立使用babel，需要安装下面两个库
++ @babel/core：babel核心库，提供了编译所需要的的所有api
++ @babel/clli：提供一个命令行工具，调用核心库的api完成编译
+```shell
+npm install -D @babel/core @babel/cli
+```
+### babel的使用
+@babel/cli的使用极其简单
+
+它提供了一个命令`babel`
+```shell
+#按文件编译
+babel 要编译的文件 -o 编译结果文件
+#按目录编译
+babel 要编译的整个目录 -d 编译结果放置的目录
+```
+### bable的配置
+可以看到，babel本身没有做任何事情，真正的编译要依托于**babel插件**和**babel预设**来完成
+>babel预设和postcss预设含义一样，是多个插件的集合体，用于解决一系列常见的兼容问题
+
+需要通过一个配置文件`.babelrc`
+```json
+{
+    "presets":[],
+    "plugins":[]
+}
+```
+## babel预设
+babel有多种预设，最常见的是`@babel/preset-env`
+
+`@babel/preset-env`可以让你使用最新的JS语法，而无需针对每种语法转换设置具体的插件
+
+### 配置
+```json
+{
+    "presets":[
+        "@babel/preset-env"
+    ]
+}
+```
+### 兼容的浏览器
+`@babel/preset-env`需要根据兼容的浏览器范围来确定如何编译，和postcss一样，可以使用文件`.browserslistrc`来描述浏览器的兼容范围
+```
+last 3 version
+> 1%
+not ie <= 8
+```
+### 预设的配置
+```json
+{
+    "presets": [
+        ["@babel/preset-env", {
+            "配置项1": "配置值",
+            "配置项2": "配置值",
+            "配置项3": "配置值"
+        }]
+    ]
+}
+```
+
+其中一个比较常见的配置项是`usebuiltins`，该配置的默认值是false
+
+它有什么用呢？由于该预设仅转换新的语法，并不对新的API进行任何处理
+
+例如：
+
+```js
+new Promise(resolve => {
+    resolve()
+})
+```
+
+转换的结果为
+
+```js
+new Promise(function (resolve) {
+  resolve();
+});
+```
+
+如果遇到没有Promise构造函数的旧版本浏览器，该代码就会报错
+
+而配置`usebuiltins`可以在编译结果中注入这些新的API，它的值默认为`false`，表示不注入任何新的API，可以将其设置为`usage`，表示根据API的使用情况，按需导入API
+
+```json
+{
+    "presets": [
+        ["@babel/preset-env", {
+            "useBuiltIns": "usage",
+            "corejs": 3
+        }]
+    ]
+}
+```
+## babel插件
+除了预设可以转换代码之外，插件也可以转换代码，它们的顺序是：
++ 插件在presets之前运行
++ 插件顺序从前往后排列
++ preset顺序是颠倒的（从后往前）
+通常情况下，`@babel/preset-env`只转换那些已经形成正式标准的语法，对于某些处于早期阶段、还没有确定的语法不做转换
+
+如果要转换这些语法，就要单独使用插件
+
+## `@babel/plugin-proposal-class-properties`
+
+该插件可以让你在类中书写初始化字段
+
+```js
+class A {
+    a = 1;
+    constructor(){
+        this.b = 3;
+    }
+}
+```
+
+## `@babel/plugin-proposal-function-bind`
+
+该插件可以让你轻松的为某个方法绑定this
+
+```js
+function Print() {
+    console.log(this.loginId);
+}
+
+const obj = {
+    loginId: "abc"
+};
+
+obj::Print(); //相当于：Print.call(obj);
+```
+
+> 遗憾的是，目前vscode无法识别该语法，会在代码中报错，虽然并不会有什么实际性的危害，但是影响观感
+
+### `@babel/plugin-proposal-optional-chaining`
+
+```js
+const obj = {
+  foo: {
+    bar: {
+      baz: 42,
+    },
+  },
+};
+
+const baz = obj?.foo?.bar?.baz; // 42
+
+const safe = obj?.qux?.baz; // undefined
+```
+
+### `babel-plugin-transform-remove-console`
+
+该插件会移除源码中的控制台输出语句
+
+```js
+console.log("foo");
+console.error("bar");
+```
+
+编译后
+
+```js
+
+```
+
+### `@babel/plugin-transform-runtime`
+
+用于提供一些公共的API，这些API会帮助代码转换
+
+## webpack中使用babel
+```js
+module.exports = {
+    mode: "development",
+    devtool: "source-map",
+    module: {
+        rules: [
+            { test: /\.js$/, use: "babel-loader" }
+        ]
+    }
+}
+```
+## 性能优化概述
+性能优化主要包含三个方面
+
+![](./imgs/2020-02-12-09-53-01.png)
+
+**构建性能**
+
+这里所说的构建性能，是指在**开发阶段的构建性能**，而不是生产环境的构建性能
+
+优化的目标，**是降低从打包开始，到代码效果呈现所经过的时间**
+
+构建性能会影响开发效率。构建性能越高，开发过程中时间的浪费越少
+
+**传输性能**
+
+传输性能是指，打包后的JS代码传输到浏览器经过的时间
+
+在优化传输性能时要考虑到：
+
+1. 总传输量：所有需要传输的JS文件的内容加起来，就是总传输量，重复代码越少，总传输量越少
+2. 文件数量：当访问页面时，需要传输的JS文件数量，文件数量越多，http请求越多，响应速度越慢
+3. 浏览器缓存：JS文件会被浏览器缓存，被缓存的文件不会再进行传输
+
+**运行性能**
+
+运行性能是指，JS代码在浏览器端的运行速度
+
+它主要取决于我们如何书写高性能的代码
+
+**永远不要过早的关注于性能**，因为你在开发的时候，无法完全预知最终的运行性能，过早的关注性能会极大的降低开发效率
+
+---------
+
+性能优化主要从上面三个维度入手
+
+**性能优化没有完美的解决方案，需要具体情况具体分析**
+## 减少模块解析
+### 什么叫做模块解析
+![](./imgs/2020-02-13-16-26-41.png)
+
+模块解析包括：抽象语法树分析、依赖分析、模块语法替换
+### 不做模块解析会怎样
+![](./imgs/2020-02-13-16-28-10.png)
+如果某个模块不做解析，该模块经过loader处理后的代码就是最终代码
+
+如果没有loader对该模块进行处理，该模块的源码就是最终打包结果的代码
+
+如果不对某个模块进行解析，可以缩短构建时间
+
+### 哪些模块不需要进行解析
+
+模块中无其他依赖：已经打包好的第三方库，比如jquery
+
+### 如何让某个模块不要解析
+
+配置`module.noParse`，它是一个正则，被正则匹配到的模块不会解析
+```js
+ module: {
+        noParse: /test/
+    }
+```
+## 优化loader性能
+### 1.进一步限制loader的应用范围
+例如：babel-loader可以转换es6或者更高版本的语法，可是有些库本身就是用es5语法写的，不需要转换，使用babel-loader反而会浪费构建时间
+
+lodash就是这样一个库
+
+通过`module.rule.exclude`或`module.rule.include`，排除或仅包含需要应用loader的场景
+
+```js
+module.exports = {
+    module: {
+        rules: [
+            {
+                test: /\.js$/,
+                exclude: /lodash/,
+                use: "babel-loader"
+            }
+        ]
+    }
+}
+```
+如果暴力一点，甚至可以排除掉`node_modules`目录中的模块，或仅转换`src`目录的模块
+
+```js
+module.exports = {
+    module: {
+        rules: [
+            {
+                test: /\.js$/,
+                exclude: /node_modules/,
+                //或
+                // include: /src/,
+                use: "babel-loader"
+            }
+        ]
+    }
+}
+```
+### 2.缓存loader的结果
+如果某个文件内容不变，经过相同的loader解析后，解析的结果也不变，于是，可以将loader的结果保存下来，让后续的解析直接使用保存的结果
+
+`cache-loader`可以实现这样的功能
+```js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        use: ['cache-loader', ...loaders]
+      },
+    ],
+  },
+};
+```
+有趣的是，`cache-loader`放到最前面，却能够决定后续的loader是否运行,实际上，loader的运行过程中，还包含一个过程，即`pitch`
+![](./imgs/2020-02-21-13-32-36.png)
+### 3.为loader的运行开启多线程
+
+`thread-loader`会开启一个线程池，线程池中包含适量的线程
+
+它会把后续的loader放到线程池的线程中运行，以提高构建效率
+
+由于后续的loader会放到新的线程中，所以，后续的loader不能：
+
+- 使用 webpack api 生成文件
+- 无法使用自定义的 plugin api
+- 无法访问 webpack options
+
+> 在实际的开发中，可以进行测试，来决定`thread-loader`放到什么位置
+
+**特别注意**，开启和管理线程需要消耗时间，在小型项目中使用`thread-loader`反而会增加构建时间
+## 热替换HMR
+>热替换并不能降低构建时间（可能还会稍微增加，但可以降低代码改动到效果呈现的时间）
+
+当使用`webpack-dev-server`时，考虑代码改动到效果呈现的过程
+
+![](./imgs/2020-02-21-14-20-49.png)
+
+而使用了热替换后，流程发生了变化
+
+![](./imgs/2020-02-21-14-22-32.png)
+### 使用和原理
+1. 更改配置
+```js
+module.exports = {
+  devServer:{
+    hot:true // 开启HMR
+  },
+  plugins:[ 
+    // 可选
+    new webpack.HotModuleReplacementPlugin()
+  ]
+}
+```
+2. 更改代码
+
+```js
+// index.js
+
+if(module.hot){ // 是否开启了热更新
+  module.hot.accept() // 接受热更新
+}
+```
+首先，这段代码会参与最终运行！
+
+当开启了热更新后，`webpack-dev-server`会向打包结果中注入`module.hot`属性
+
+默认情况下，`webpack-dev-server`不管是否开启了热更新，当重新打包后，都会调用`location.reload`刷新页面
+
+但如果运行了`module.hot.accept()`，将改变这一行为
+
+`module.hot.accept()`的作用是让`webpack-dev-server`通过`socket`管道，把服务器更新的内容发送到浏览器
+
+![](./imgs/2020-02-21-14-34-05.png)
+
+然后，将结果交给插件`HotModuleReplacementPlugin`注入的代码执行
+
+插件`HotModuleReplacementPlugin`会根据覆盖原始代码，然后让代码重新执行
+
+**所以，热替换发生在代码运行期**
+
+# 样式热替换
+
+对于样式也是可以使用热替换的，但需要使用`style-loader`
+
+因为热替换发生时，`HotModuleReplacementPlugin`只会简单的重新运行模块代码
+
+因此`style-loader`的代码一运行，就会重新设置`style`元素中的样式
+
+而`mini-css-extract-plugin`，由于它生成文件是在**构建期间**，运行期间并会也无法改动文件，因此它对于热替换是无效的
+## 手动分包
+## 自动分包
+## 代码压缩
+## tree shaking
+## 懒加载
+## eslint
+## bundle analyzer
+## gzip
+

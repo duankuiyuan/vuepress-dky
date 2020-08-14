@@ -129,11 +129,6 @@ var promise = new Promise((resolve,reject)=>{
 return promise;
 }
 ```
-## 2.Promise API
-### 2.1
-### 2.2
-### 2.3
-### 2.4
 ## 3.高阶函数
 ### 3.1高阶函数概念
 + 如果一个函数的参数是一个函数，它就是高阶函数（回调函数）

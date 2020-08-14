@@ -13,7 +13,7 @@ module.exports = {
           { text: 'node', link: '/node/' },
           { text: '前端设计模式', link: '/design/' },
           { text: '数据结构与算法', link: '/structrue/' },
-          { text: 'webpack', link: '/tool/' },
+          { text: '工具', link: '/tool/' },
           { text: '网络', link: '/net/' },
           { text: '面试问题', link: '/interview/'},
           { text: '服务器', link: '/server/'},
@@ -26,6 +26,8 @@ module.exports = {
               '',   
               'jsBasic',  
               'jsTheory',  
+              'extend',
+              'modules',
               'promise',
               'es6'  
             ],
@@ -48,16 +50,17 @@ module.exports = {
               '',
               'lifeCycle',   
               'vueTheory',
+              'vueinterview',
               'vueRouter', 
               'vuex', 
               'vueSSR', 
-              
             ],
             '/react/': [
               ''
             ],
             '/tool/': [
-              ''
+              '',
+              'npm', 
             ],
             '/net/': [
               '',
