@@ -15,6 +15,14 @@
 + **5、客户端接收响应**
 + **6、浏览器解析HTML、渲染页面**
 ## get和post的区别
+本质上get和post都是tcp链接，并无差别。但由于http的规范和浏览器与服务器的限制，导致他们在应用上有所不同
+1. get参数通过url传递（可见不安全），post放在请求体中（不可见相对安全）
+2. get长度有所限制，post长度是无限制的
+3. get产生的url可以被收藏书签，post不可以
+4. get请求会被浏览器主动缓存，post不会被主动缓存
+5. get在浏览器回退时是无害的，而post会再次提交请求。
+6. get只允许ASCII.,post没有编码限制，允许发二进制的。
+7. get请求只能进行url编码，而post支持多种编码方式。
 ## http有哪些方法
 + http1.0定义了三种请求方法：get、post、head
 + http1.1新增了五种请求方法：options、put、delete、trace、connect

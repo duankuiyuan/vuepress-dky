@@ -1,8 +1,8 @@
 ---
 home: true
 heroImage: /mandaren.jpg
-heroText: 你很不走运
-tagline: 很不走运
+heroText: 
+tagline: 
 actionText:  →
 actionLink: /jsBasic/
 # features:
