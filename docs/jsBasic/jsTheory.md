@@ -1,9 +1,167 @@
 # js 基本原理
-## 1js作用域、作用域链
 ## 预编译
+### js运行三部曲
+1. 语法分析
+2. 预编译
+3. 解释执行
+### 预编译产生的现象
+
+函数 整体提升（提升为赋值为函数的值），变量 声明提升（提升赋值为undefinded）
+```js
+console.log(a)//undefinded
+console.log(test)//function(){}
+function test(){}
+var a = 1;
+```
+>test是函数的整体提升，提升后可以访问到函数的值，a是变量的声明提升，提升后值为undefinded
+
+### imply global 暗示全局变量
+
+即任何变量，如果变量未经声明就赋值，此变量就为全局对象所有。
+
+### 一切声明的全局变量，全是window的属性
+window就是全局的域
+
+var a = 123; ===> window.a = 123;
+```js
+function test(){
+  var a = b = 2;//给b赋值过程中是赋值给了全局的b，因为它没有经过声明
+}
+window.b //2
+```
+### 预编译过程（四部曲）
+预编译发生在函数执行的前一刻
++ 1.创建AO对象（执行期上下文）
++ 2.找行参和变量声明，将将变量和形参名作为AO属性名，值为undefined
++ 3.行参和实参相统一
++ 4.在函数体里面找函数声明，值赋予函数体
+```js
+function fn(a){
+  console.log(a);//function a
+  var a = 123;
+  console.log(a); //123
+  function a () {};//这句代码预编译时看过，解释执行时不再看
+  console.log(a);//123
+  console.log(b);//undefinded
+  var  b =  function () {};
+  console.log(b);//function b
+  console.log(d);//function d
+  function d () {};
+}
+fn(1)
+```
+## js作用域、作用域链
+### [[scope]]:
+每个javascript函数都是一个对象，对象中有些属性我们可以访问，但有些不可以，这些属性仅供javascript引擎存取，\[scope]]就是其中一个。\[[scope]]指的就是我们所说的作用域,其中存储了运行期上下文的集合。
+```js
+function a(){
+}
+//a函数定义时作用于产生 ，scope的第0位指向的是全局活动对象GO（全局执行期上下文）
+//a.[[scope]] ===> 0: GO{}
+var glob = 100;
+a();
+//a执行
+//产生a的AO活动对象（a的执行期上下文）
+//a.[[scope]] ===> 0: AO{}
+//                 1: GO{}
+```
+### 作用域链
+\[[scope]]中所存储的执行期上下文对象的集合，这个集合呈链式链接，我们把这种链式链接叫做作用域链。
+```js
+function a(){
+  function b(){
+    var b = 1231;
+  }
+  var a = 1;
+  b();
+}
+var glob = 100;
+a();
+```
+>函数被定义时候会产生scope，这个scope的初始值是当前它所在的执行环境的scope的值
+
+>a定义产生a.scope:[{GO对象}]，a执行（前一刻）a.scope:[{AO对象a}，{GO对象}]，a执行到b的定义
+b.scope:[{AO对象a}，{GO对象}]，，b执行（前一刻）b.scope:[{AO对象b}，{AO对象a}，{GO对象}]
+
+![](./imgs/a1.png)
+![](./imgs/a2.png)
+![](./imgs/b1.png)
+![](./imgs/b2.png)
+### 执行期上下文
+当函数执行时，会创建一个称为执行期上下文的内部对象。一个执行期上下文定义了一个函数执行时的环境，函数每次执行时对应的执行上下文都是独一无二的，所以多次调用一个函数会导致创建多个执行上下文，当函数执行完毕，执行上下文被销毁。
+>上述例子中，例如，b被执行后，b自己的执行期上下文会被销毁，b回到定义的状态即b.scope:[{AO对象a}，{GO对象}]，当a执行完毕后，a的执行上下文被销毁即a.scope:[{GO对象}]，由于被销毁的a的执行期上下文中有b函数，所以b函数此时也被销毁了。不管是a还是执行完后回到被定义状态等待下次被执行，一旦被执行就会重新生成执行期上下会放在scope的顶端
+
+### 变量查找
+从作用域链的顶端依次向下查找。
 ## 闭包
+当内部函数被保存到外部时，将会生成闭包。闭包会导致原有作用域链不释放。
+```js
+function a (){
+  function b(){
+    var bbb = 234;
+    console.log(aaa);
+  }
+  var aaa = 123;
+  return b;
+}
+var glob = 100;
+var demo = a();
+demo();
+```
+![](./imgs/bibao.png)
+>上述代码a执行后，a的执行上下文会被销毁，a的scope第0位的那条线会断掉，但是，由于b被保存到了demo， a的执行期上下文却被demo存在了demo的scope的第0位。
 ## js原型、原型链
-## js继承
+### 原型
+原型是function对象的一个属性prototype，它定义了构造函数制造出的对象的公共祖先。通过该构造函数产生的对象，可以继承该原型的属性和方法。原型也是对象
+### 原型的特点
++ 利用原型特点和概念，可以提取共有属性
++ 对象属性的增删和原型上属性增删改查
+```js
+function Person(name){
+  this.name = name;
+}
+Person.prototype = {
+  name:"a"
+}
+let person = new Person("b");
+person.a // b
+```
++ constructor
+constructor是构造函数的prototype的属性，值为构造函数本身
++ __proto__属性
+
+\__proto__：Function.prototype
+
+对象的属性取值时会先找自己身上的如果没有会沿着__proto__找到构造函数的prototype
+
+\__proto__属性是可以被修改的
+```js
+Person.prototype.name = "a"
+function Person(){
+}
+Person.prototype.name = "b";
+let person = new Person();
+console.log(person.name) // b
+```
+>由于__proto__指向的时Person.prototype的地址，当Person.prototype的值本身发生变化，影响到了\__proto__
+```js
+Person.prototype.name = "a"
+function Person(){
+}
+Person.prototype = {
+name:"b"
+};
+let person = new Person();
+console.log(person.name) // a
+```
+>由于\__proto__指向的时Person.prototype的值的地址，相当于它们两个同时指向了一个对象的地址，当Person.prototype被重新赋值后，仅仅是Person.prototype指向了新对象的地址，而\__proto__指向的还是老对象的地址
+### 原型链
+当我们访问对象的属性时，对先在自身上找，如果找不到会沿着\__proto__找到它的构造函数的prototype,如果上没有，又会沿着prototype对象的\__proto__找到它（prototype）的构造函数的的prototype
+
+对象的最终都会继承自Object.prototype
+
+## new 操作
+
 ## this概述
    + 在绝大多数情况下，函数的调用方式决定了this的值。this不能在执行期间被赋值，并且在每次函数被调用时this的值也可能会不同，es5引入bind的方法来设置函数的this的值，而不用考虑函数是如何被调用的，es6引入了支持词法分析的箭头函数（它在闭合的执行环境内设置this的值）
    + javascript函数中的this并不是函数定义时候确定的，而是在函数调用的时候确定的。换句话说，函数的调用方式决定了this的指向。
