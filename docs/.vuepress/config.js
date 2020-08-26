@@ -24,6 +24,7 @@ module.exports = {
             
             '/jsBasic/': [
               '',   
+              'ajax',  
               'jsBasic',  
               'jsTheory',  
               'extend',

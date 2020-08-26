@@ -1,4 +1,4 @@
-# 排序
+# 排序与查找
 ## 冒泡排序
 ### 排序的本质
 + 排序的本质是比较和交换，不是比较大小
@@ -64,30 +64,53 @@ function sort(arr){
 ## 快速排序
 + 快速排序标准版
 ```js
-const quickSort = (array) => {
-  const sort = (arr, left = 0, right = arr.length - 1) => {
-    if (left >= right) {//如果左边的索引大于等于右边的索引说明整理完毕
-    return
+//小的放左边，大的放右边
+function quickSort(){
+ 
+  function _quickSort(arr,start,end){
+    if(start >= end || start > arr.length -1){
+     return;
     }
-  let i = left
-  let j = right
-  const baseVal = arr[j] // 取无序数组最后一个数为基准值
-  while (i < j) {//把所有比基准值小的数放在左边大的数放在右边
-    while (i < j && arr[i] <= baseVal) { //找到一个比基准值大的数交换
-    i++
+    let low = start;
+    let high = end;
+    let key = arr[end]
+    while(low < high){
+       while(low < high && arr[low] <= key){
+           low ++;
+       }
+       arr[high] = arr[low];
+       while(low < high && arr[high] >= key){
+          high --;
+       }
+       arr[low] = arr[high];
     }
-    arr[j] = arr[i] // 将较大的值放在右边如果没有比基准值大的数就是将自己赋值给自己（i 等于 j）
-    while (j > i && arr[j] >= baseVal) { //找到一个比基准值小的数交换
-    j--
+    arr[low] = key;
+    _quickSort(arr,start,low -1);
+    _quickSort(arr,low +1,end);
   }
-    arr[i] = arr[j] // 将较小的值放在左边如果没有找到比基准值小的数就是将自己赋值给自己（i 等于 j）
-  }
-  arr[j] = baseVal // 将基准值放至中央位置完成一次循环（这时候 j 等于 i ）
-  sort(arr, left, j-1) // 将左边的无序数组重复上面的操作
-  sort(arr, j+1, right) // 将右边的无序数组重复上面的操作
-  }
-  const newArr = array.concat() // 为了保证这个函数是纯函数拷贝一次数组
-  sort(newArr)
-  return newArr
+  _quickSort(arr,0,arr.length-1)
 }
+let arr = [0,6,8,3,7,8,2,1,9];
+quickSort(arr)
+```
+## 二分查找
+```js
+function search(arr,target){
+  if(arr.length === 0 || target < arr[0] || target > arr[arr.length -1]) return false;
+  let minIndex = 0;
+  let maxIndex = arr.length -1;
+  while(minIndex <= maxIndex){
+    let mid = Math.floor((minIndex + maxIndex)/2);//中间下标
+    if(arr[mid] === target){
+      return true;
+    }else if(arr[mid] > target){
+      maxIndex = mid - 1;
+    }else{
+      minIndex = mid + 1;
+    }
+
+  }
+  return false;
+}
+console.log(search([1,2,3,4,5,6,7,8],100))
 ```
