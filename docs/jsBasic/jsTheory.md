@@ -161,7 +161,29 @@ console.log(person.name) // a
 对象的最终都会继承自Object.prototype
 
 ## new 操作
+1. 创建一个空对象
+2. 让空对象的_proto_（IE没有该属性）成员指向了构造函数的prototype成员对象
+3. 使用apply调用构造器函数，属性和方法被添加到 this 引用的对象中
+4. 如果构造函数中没有返回其它对象，那么返回 this，即创建的这个的新对象，否则，返回构造函数中返回的对象
+```js
+function _new() {
+    let obj= {}; // 创建的新对象
+    // 第一个参数是构造函数
+    let [constructor, ...args] = [...arguments];
 
+    // 执行 [[原型]] 连接 ;实际上就是生产了一个新的上下文
+    obj.__proto__ = constructor.prototype;
+
+    // 使用apply在obj作用域中调用构造器函数，属性和方法被添加到 this 引用的对象即obj中
+    let result = constructor.apply(obj, args);
+    if (result && (typeof (result) == "object" || typeof (result) == "function")) {
+        // 如果构造函数执行的结果返回的是一个对象，那么返回这个对象
+        return result;
+    }
+    // 如果构造函数返回的不是一个对象，返回创建的新对象
+    return obj;
+}
+```
 ## this概述
    + 在绝大多数情况下，函数的调用方式决定了this的值。this不能在执行期间被赋值，并且在每次函数被调用时this的值也可能会不同，es5引入bind的方法来设置函数的this的值，而不用考虑函数是如何被调用的，es6引入了支持词法分析的箭头函数（它在闭合的执行环境内设置this的值）
    + javascript函数中的this并不是函数定义时候确定的，而是在函数调用的时候确定的。换句话说，函数的调用方式决定了this的指向。

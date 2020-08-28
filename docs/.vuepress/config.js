@@ -23,8 +23,7 @@ module.exports = {
          sidebar: {
             
             '/jsBasic/': [
-              '',   
-              'ajax',  
+              '',    
               'jsBasic',  
               'jsTheory',  
               'extend',
@@ -51,7 +50,6 @@ module.exports = {
               '',
               'lifeCycle',   
               'vueTheory',
-              'vueinterview',
               'vueRouter', 
               'vuex', 
               'vueSSR', 

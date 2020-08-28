@@ -8,12 +8,14 @@
         console.log("防抖")
     },2000)
     function debounce(fn, wait) {
-        let timer = null;
-        return function () {
-            if (timer) {
-                clearTimeout(timer);
+        let time = null;
+        return function (...args) {
+            if (time) {
+                    clearTimeout(time);
             }
-            timer = setTimeout(fn, wait);
+            time = setTimeout(() =>{
+                    fn.apply(this, args);
+            },wait);
         }
     }
 ```
