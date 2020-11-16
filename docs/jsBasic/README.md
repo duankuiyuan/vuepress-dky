@@ -1,15 +1,4 @@
 # 前端
-## 页面加载顺序
-+ 1.创建Document对象，开始解析web页面。解析HTML元素和他们的文本内容后添加Element对象和Text节点到文档中。这个阶段 document.readyState = ‘loading’ 。
-+ 2.遇到link外部css，创建线程加载，并继续解析文档
-+ 3.遇到script外部js，并且没有设置async、defer，浏览器加载，并阻塞，等待js加载完成并执行该脚本，然后继续解析文档。
-+ 4.遇到script外部js，并且设置有async、defer，浏览器创建线程加载，并继续解析文档。 对于async属性的脚本，脚本加载完成后立即执行。（禁止使用document.write()）
-+ 5.遇到img等，先正常解析dom结构，然后浏览器异步加载src，并继续解析文档。
-+ 6.当文档解析完成，document.readyState = ‘interactive’ 。
-+ 7.文档解析完成后，所有设置有defer的脚本会按照顺序执行。（禁止使用document.write()）;
-+ 8.document对象触发DOMContentLoaded事件，这也标志着程序执行从同步脚本执行阶段，转化为事件驱动阶段。
-+ 9.当所有async的脚本加载完成并执行后、img等加载完成后，document.readyState = ‘complete’，window对象触发load事件。
-+ 10.从此，以异步响应方式处理用户输入、网络事件等。
 ## async、defer
 + defer、async都是异步下载，但是执行时刻不一致；
 + async：HTML5新增属性，用于异步下载脚本文件，下载完毕立即解释执行代码。
@@ -26,6 +15,46 @@
 + 2.解析css，生成CSSOM，css对象模型
 + 3.dom和css合并，构建渲染树（Render Tree）
 + 4.布局（Layout）和绘制（Paint），重绘（repaint）和重排（reflow/回流）
+## 浏览器渲染原理
++ DOM Tree：浏览器将HTML解析成树形的数据结构。
++ CSS Rule Tree：浏览器将CSS解析成树形的数据结构。　　
++ Render Tree（着色树）：DOM和CSSOM合并后生成Render Tree。　　
++ layout：有了Render Tree，浏览器已经能知道网页中有哪些节点、各个节点的CSS定义以及他们的从属关系，从而去计算出每个节点在屏幕中的位置。　　
++ painting（绘制）：按照算出来的规则，通过显卡，把内容画到屏幕上。
++ reflow（回流/重排）：当浏览器发现某个部分发生了点变化影响了布局，需要倒回去重新渲染，内行称这个回退的过程叫 reflow。reflow 会从 html 这个 root frame 开始递归往下，依次计算所有的结点几何尺寸和位置。reflow 几乎是无法避免的。现在界面上流行的一些效果，比如树状目录的折叠、展开（实质上是元素的显 示与隐藏）等，都将引起浏览器的 reflow。鼠标滑过、点击……只要这些行为引起了页面上某些元素的占位面积、定位方式、边距等属性的变化，都会引起它内部、周围甚至整个页面的重新渲 染。通常我们都无法预估浏览器到底会 reflow 哪一部分的代码，它们都彼此相互影响着。
++ repaint（重绘）：改变某个元素的背景色、文字颜色、边框颜色等等不影响它周围或内部布局的属性时，屏幕的一部分要重画，但是元素的几何尺寸没有变。
++ （1）display:none 的节点不会被加入Render Tree，而visibility: hidden 则会，所以，如果某个节点最开始是不显示的，设为display:none是更优的。
++ display:none 会触发 reflow，而 visibility:hidden 只会触发 repaint，因为没有发现位置变化。
++ 有些情况下，比如修改了元素的样式，浏览器并不会立刻reflow 或 repaint 一次，而是会把这样的操作积攒一批，然后做一次 reflow，这又叫异步 reflow 或增量异步 reflow。但是在有些情况下，比如resize 窗口，改变了页面默认的字体等，对于这些操作，浏览器会马上进行 reflow。
+### DOM解析：把HTML文档解析为DOM树的过程
++ 遇到script标签则停止解析，先执行js
++ DOMContentLoaded事件在HTML文档完全加载并解析后触发，不等样式表、图片、子帧（subframes）完成加载。
++ 此时图片资源并未加载完成
+### CSS解析：将CSS代码解析为CSS规则树的过程
++ 与DOM解析同步进行
++ 与script的执行互斥（js中可能要获取css属性）
++ Webkit内核进行了script执行优化（当script与css无关时，不会互斥）
+### DOM Tree
++ display:none的元素也在DOM树中
++ script标签也在DOM树中、
++ 注释也在DOM树中
+### Render Tree
++ DOM Tree + CSS Rules = Render Tree
++ 每个节点为一个Render Object对象，包含宽高、位置、背景色等样式信息
++ 宽高和位置是通过Layout（重排）计算出
++ ender Tree和DOM Tree不完全对应
++ display:none的元素不在Render Tree中
++ visibility:hidden的元素在Render Tree中
++ float元素、absolute元素、fixed元素会发生位置偏移
++ 常说的脱离文档流，就是脱离Render Tree
+##  dom树节点和渲染树节点一一对应吗，有什么是dom树会有，渲染树不会有的节点
++ 渲染树不包括 head 和隐藏元素，大段文本的每一个行都是独立节点，每一个节点都有对应的 css 属性
+## css会阻塞DOM解析吗
++ 对于一个HTML文档来说，不管是内联还是外链的css，都会阻碍后续的dom渲染，但是不会阻碍后续dom的解析。当css文件放在中时，虽然css解析也会阻塞后续dom的渲染，但是在解析css的同时也在解析dom，所以等到css解析完毕就会逐步的渲染页面了。
+## requestIdleCallbackk是干什么用的
+
+## 前端的网络安全如何防御（xss，csrf）
+## cookies的保护方式
 ## 浏览器构成
 1. 用户界面
 2. 浏览器引擎
@@ -47,6 +76,8 @@
 + 用户行为，例如调整窗口太小，改变字号，或者滚动。
 ### 如何避免
 + 通过改变class的方式来集中改变样式
++ 用transform做形变和位移
++ 通过绝对定位，脱离当前层叠上下文（即形成新的Render Layer）
 ## js事件环机制
 ### 相关线程
 + GUI渲染线程（UI线程 渲染页面）
